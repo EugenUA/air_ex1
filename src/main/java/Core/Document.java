@@ -6,7 +6,7 @@ public class Document {
     private List<Term> terms;
     private int id;
 
-    Document(int id, List<Term> terms) {
+    public Document(int id, List<Term> terms) {
         this.id = id;
         this.terms = terms;
     }

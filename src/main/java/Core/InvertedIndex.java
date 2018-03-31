@@ -25,21 +25,26 @@ public class InvertedIndex {
                 }
                 postingList = dictionary.get(word);
                 postingList.addPosting(term, document);
-                //dictionary.get(word).addPosting(term, document);
+
 
                 // Step 1: Double capacity if Posting List is full
                 if (postingList.isFull()) {
                     postingList.setCapacity(postingList.size() * 2);
                 }
-
-                // Step 2: Sort dictionary
-                sortedSet.addAll(dictionary.values());
-
-
-                // Step 3: Write to disk
-                writer.println(postingList.toString());
             }
         }
+
+        // Step 2: Write to disk
+        for (String key : dictionary.keySet()) {
+            writer.print(key + " ");
+            for (Posting posting : dictionary.get(key).getPostings()) {
+                writer.print(posting.getDocument().getId() + " ");
+            }
+            writer.print('\n');
+        }
+
+        writer.close();
+
         postingListMap = dictionary;
     }
 
