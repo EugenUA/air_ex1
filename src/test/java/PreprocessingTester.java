@@ -24,8 +24,8 @@ public class PreprocessingTester {
 
     @Test
     public void test1(){
-        result = preprocessing.conductPreprocessing(initialMessage1);
-        System.out.println(result);
+       // result = preprocessing.conductPreprocessing(initialMessage1);
+        //System.out.println(result);
     }
 
 }

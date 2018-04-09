@@ -14,7 +14,7 @@ public class InvertedIndex {
     public InvertedIndex(Corpus corpus) throws UnsupportedEncodingException, FileNotFoundException {
         this.corpus = corpus;
         Map<String, PostingList> dictionary = new HashMap<>();
-        TreeSet sortedSet = new TreeSet();
+        //TreeSet sortedSet = new TreeSet();
         PostingList postingList;
         PrintWriter writer = new PrintWriter("index.dat", "ISO-8859-1");
         for (Document document : corpus.getParsedDocuments()) {
@@ -37,8 +37,8 @@ public class InvertedIndex {
         // Step 2: Write to disk
         for (String key : dictionary.keySet()) {
             writer.print(key + " ");
-            for (Posting posting : dictionary.get(key).getPostings()) {
-                writer.print(posting.getDocument().getId() + " ");
+            for (Document document : dictionary.get(key).getDocuments()) {
+                writer.print(document.getId() + " ");
             }
             writer.print('\n');
         }
