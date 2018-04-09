@@ -1,19 +1,30 @@
 package Core;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Document {
     private List<Term> terms;
     private String rawText;
     private String id;
+    private Map<String, Integer> termFrequencyMap;
 
-    public Document() {
-
+    public Document(String id, String rawText) {
+        this.id = id;
+        this.rawText = rawText;
+        this.termFrequencyMap = new HashMap<>();
     }
 
-    public Document(String id, List<Term> terms) {
-        this.id = id;
-        this.terms = terms;
+    public void calculateTermFrequency() {
+        for (Term t : terms) {
+            String word = t.getWord();
+            if (!termFrequencyMap.containsKey(word)) {
+                termFrequencyMap.put(word, 0);
+            }
+            int frequency = termFrequencyMap.get(word);
+            termFrequencyMap.put(word, frequency + 1);
+        }
     }
 
     public String getId() {
@@ -42,5 +53,12 @@ public class Document {
 
     public boolean isEmpty() {
         return terms == null || terms.isEmpty();
+    }
+
+    public int getTermFrequency(String word) {
+        if (!termFrequencyMap.containsKey(word)) {
+            return 0;
+        }
+        return termFrequencyMap.get(word);
     }
 }

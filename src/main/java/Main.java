@@ -35,7 +35,8 @@ public class Main {
 
                 @Override
                 public Document next() {
-                    Document document = new Document();
+                    String docno = "";
+                    Document document = null;
                     StringBuilder sb = new StringBuilder();
                     try {
                         String line;
@@ -60,14 +61,13 @@ public class Main {
 
                             Matcher m = docno_tag.matcher(line);
                             if (m.find()) {
-                                String docno = m.group(1);
-                                document.setId(docno);
+                                docno = m.group(1);
                             }
 
                             sb.append(line);
                         }
                         if (sb.length() > 0)
-                            document.setRawText(sb.toString());
+                            document = new Document(docno, sb.toString());
 
                     } catch (IOException e) {
                         document = null;

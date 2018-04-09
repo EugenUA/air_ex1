@@ -1,6 +1,5 @@
 package Preprocessing;
 
-import Core.Document;
 import Core.Term;
 import opennlp.tools.stemmer.PorterStemmer;
 import org.apache.log4j.Logger;

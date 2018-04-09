@@ -5,19 +5,20 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeSet;
 
 public class InvertedIndex {
     private Corpus corpus;
     private Map<String, PostingList> postingListMap;
+    private Map<String, Double> tfidfMap;
 
     public InvertedIndex(Corpus corpus) throws UnsupportedEncodingException, FileNotFoundException {
         this.corpus = corpus;
         Map<String, PostingList> dictionary = new HashMap<>();
-        //TreeSet sortedSet = new TreeSet();
+        this.tfidfMap = new HashMap<>();
         PostingList postingList;
         PrintWriter writer = new PrintWriter("index.dat", "ISO-8859-1");
         for (Document document : corpus.getParsedDocuments()) {
+            document.calculateTermFrequency();
             for (Term term : document.getTerms()) {
                 final String word = term.getWord();
                 if (!dictionary.containsKey(word)) {
@@ -31,6 +32,9 @@ public class InvertedIndex {
                 if (postingList.isFull()) {
                     postingList.setCapacity(postingList.size() * 2);
                 }
+
+                postingListMap = dictionary;
+                tfidfMap.put(document.getId(), calculateTfidf(document, term.getWord()));
             }
         }
 
@@ -39,13 +43,42 @@ public class InvertedIndex {
             writer.print(key + " ");
             for (Document document : dictionary.get(key).getDocuments()) {
                 writer.print(document.getId() + " ");
+                writer.print(" | " + tfidfMap.get(document.getId()) + " ");
             }
             writer.print('\n');
         }
 
         writer.close();
+    }
 
-        postingListMap = dictionary;
+
+    private double calculateTfidf(Document document, String term) {
+        int termFrequency = document.getTermFrequency(term);
+        if (termFrequency == 0) {
+            return 0;
+        }
+        return getInverseDocumentFrequency(term) * document.getTermFrequency(term);
+    }
+
+    private double getInverseDocumentFrequency(String word) {
+        double totalDocuments = corpus.size();
+        double relevantDocuments = getRelevantDocuments(word);
+        return Math.log((totalDocuments) / (1 + relevantDocuments));
+    }
+
+    private int getRelevantDocuments(String word) {
+        if (!postingListMap.containsKey(word)) {
+            return 0;
+        }
+        return postingListMap.get(word).getDocuments().size();
+    }
+
+    public double getTfidf(String word) {
+        Double tfidf = tfidfMap.get(word);
+        if (tfidf == null) {
+            return 0;
+        }
+        return tfidf;
     }
 
     public int size() {
