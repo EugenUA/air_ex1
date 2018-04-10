@@ -1,12 +1,13 @@
 package Preprocessing;
 
+import Core.Term;
 import opennlp.tools.stemmer.PorterStemmer;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class Preprocessing {
 
@@ -14,61 +15,51 @@ public class Preprocessing {
 
     public Preprocessing(){}
 
+    public List<String> tokenize(String content) {
+        Scanner in = new Scanner(content);
+        List<String> tokens = new ArrayList<>();
+        while (in.hasNext()) {
+            String s = in.next();
+            tokens.add(s);
+        }
 
-    /**
-     * @brief Makes preprocessing step for single string message
-     * @details Preprocessing includes following steps: ->> removal of line delimiters;
-     *                                                  ->> deleting of urls and emails;
-     *                                                  ->> tokenization;
-     *                                                  ->> case folding;
-     *                                                  ->> stop words removal;
-     *                                                  ->> stemming
-     * @author Gruzdev Eugen
-     * @date 29.03.2018
-     * @param initialMessage message to be preprocessed
-     * @return lsit of preprocessed tokens
-     */
-    public List<String> conductPreprocessing(String initialMessage){
+        return tokens;
+    }
 
-        //List<String> finalWords = new ArrayList<String>();
-        List<String> tokenizedWords = new ArrayList<String>();
+    public List<Term> textToTerms(List<String> tokens) {
+        if (tokens.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-        /* Deleting line breakers (inclusive new lines at the beginning and at the end of the string */
-        initialMessage = initialMessage.trim().replace("\n", "").replace("\r","");
+        /* if (CASE FOLDING) */
+        tokens.replaceAll(String::toLowerCase);
 
-        /* Deleting URLs and EMAILS if they are present in the initial message */
-        String URL_PATTERN = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-        String EMAIL_PATTERN = "([^.@\\s]+)(\\.[^.@\\s]+)*@([^.@\\s]+\\.)+([^.@\\s]+)";
-        initialMessage = initialMessage.replaceAll(URL_PATTERN,"").replaceAll(EMAIL_PATTERN,"");
-
-        /* TOKENIZATION and CASE FOLDING */
-        tokenizedWords.addAll(Arrays.asList(initialMessage.replaceAll(
-                                            "[^a-zA-Z ]", " ").toLowerCase().split("\\s+")));
-
-        /* STOP WORDS REMOVAL */
+        /* if (STOP WORDS) */
         // Using stop words list available in resources folder
         try {
-            List<String> stopWords = new ArrayList<String>();
+            List<String> stopWords = new ArrayList<>();
             /* Reading stop words file*/
             BufferedReader br = new BufferedReader(new FileReader("src/main/resources/stopWords.txt"));
-            String line = "";
+            String line;
             while((line = br.readLine()) != null){
                 stopWords.add(line);
             }
             /* Removing stop words */
-            tokenizedWords.removeAll(stopWords);
+            tokens.removeAll(stopWords);
         } catch(IOException e) {
             LOGGER.info("stopWords.txt not found!");
         }
 
-        /* STEMMING */
+        /* if (STEMMING) */
         // using Porter Stemming Algorithm and OpenNLP Library
+        List<Term> terms = new ArrayList<>();
         PorterStemmer porterStemmer = new PorterStemmer();
-        List<String> stemmedWords = new ArrayList<String>();  //resulting set
-        for(String word : tokenizedWords){
-            stemmedWords.add(porterStemmer.stem(word));
+        int pos = 0;
+        for (String str : tokens) {
+            String stemmedTerm = porterStemmer.stem(str);
+            terms.add(new Term(stemmedTerm, pos));
+            pos++;
         }
-
-        return stemmedWords;
+        return terms;
     }
 }
