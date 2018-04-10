@@ -73,8 +73,8 @@ public class InvertedIndex {
         return postingListMap.get(word).getDocuments().size();
     }
 
-    public double getTfidf(String word) {
-        Double tfidf = tfidfMap.get(word);
+    public double getTfidf(String docID) {
+        Double tfidf = tfidfMap.get(docID);
         if (tfidf == null) {
             return 0;
         }
