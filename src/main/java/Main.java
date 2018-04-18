@@ -1,4 +1,3 @@
-import Core.Corpus;
 import Core.Document;
 
 import Core.InvertedIndex;
@@ -35,8 +34,7 @@ public class Main {
 
                 @Override
                 public Document next() {
-                    String docno = "";
-                    Document document = null;
+                    Document document = new Document(null);
                     StringBuilder sb = new StringBuilder();
                     try {
                         String line;
@@ -61,13 +59,13 @@ public class Main {
 
                             Matcher m = docno_tag.matcher(line);
                             if (m.find()) {
-                                docno = m.group(1);
+                                document.setId(m.group(1));
                             }
 
                             sb.append(line);
                         }
                         if (sb.length() > 0)
-                            document = new Document(docno, sb.toString());
+                            document.setRawText(sb.toString());
 
                     } catch (IOException e) {
                         document = null;
@@ -78,14 +76,13 @@ public class Main {
             while (docIterator.hasNext()) {
                 Document document = docIterator.next();
                 if (document != null && document.getRawText() != null) {
-                    document.setTerms(preprocessing.textToTerms(preprocessing.tokenize(document.getRawText())));
+                    document.setTerms(preprocessing.tokenize((document.getRawText()), args));
                     documentList.add(document);
                 }
             }
         }
 
-        Corpus corpus = new Corpus(new ArrayList<>(documentList));
-        InvertedIndex index = new InvertedIndex(corpus);
+        InvertedIndex index = new InvertedIndex(documentList);
         System.out.println("Number of documents: " + index.size());
         System.out.println("Number of terms: " + index.numberOfTerms());
     }
