@@ -1,65 +1,92 @@
 package Preprocessing;
 
-import Core.Term;
 import opennlp.tools.stemmer.PorterStemmer;
-import org.apache.log4j.Logger;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Preprocessing {
-
-    private final static Logger LOGGER = Logger.getLogger(Preprocessing.class);
+    private boolean removeSpecial = false;
+    private boolean caseFolding = false;
+    private boolean stopWords = false;
+    private boolean stemming = false;
 
     public Preprocessing(){}
 
-    public List<String> tokenize(String content) {
+    public List<String> tokenize(String content, String[] args) {
+        for (String arg: args) {
+            switch (arg) {
+                case "sc":
+                    removeSpecial = true;
+                    break;
+                case "cf":
+                    caseFolding = true;
+                case "sw":
+                    stopWords = true;
+                case "st":
+                    stemming = true;
+            }
+        }
+
         Scanner in = new Scanner(content);
         List<String> tokens = new ArrayList<>();
         while (in.hasNext()) {
             String s = in.next();
-            tokens.add(s);
+            s = s.replaceAll("[^a-zA-Z ]", " ");
+            if (!s.equals(" ")) {
+                tokens.add(s);
+            }
         }
 
-        return tokens;
+        return textToTerms(tokens);
     }
 
-    public List<Term> textToTerms(List<String> tokens) {
+    private List<String> textToTerms(List<String> tokens) {
         if (tokens.isEmpty()) {
             return new ArrayList<>();
         }
 
-        /* if (CASE FOLDING) */
-        tokens.replaceAll(String::toLowerCase);
-
-        /* if (STOP WORDS) */
-        // Using stop words list available in resources folder
-        try {
-            List<String> stopWords = new ArrayList<>();
-            /* Reading stop words file*/
-            BufferedReader br = new BufferedReader(new FileReader("src/main/resources/stopWords.txt"));
-            String line;
-            while((line = br.readLine()) != null){
-                stopWords.add(line);
+        if (removeSpecial) {
+            String URL_PATTERN = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+            String EMAIL_PATTERN = "([^.@\\s]+)(\\.[^.@\\s]+)*@([^.@\\s]+\\.)+([^.@\\s]+)";
+            for (String token : tokens) {
+                token.replaceAll(URL_PATTERN,"").replaceAll(EMAIL_PATTERN,"");
             }
-            /* Removing stop words */
-            tokens.removeAll(stopWords);
-        } catch(IOException e) {
-            LOGGER.info("stopWords.txt not found!");
         }
 
-        /* if (STEMMING) */
-        // using Porter Stemming Algorithm and OpenNLP Library
-        List<Term> terms = new ArrayList<>();
-        PorterStemmer porterStemmer = new PorterStemmer();
-        int pos = 0;
-        for (String str : tokens) {
-            String stemmedTerm = porterStemmer.stem(str);
-            terms.add(new Term(stemmedTerm, pos));
-            pos++;
+        if (caseFolding) {
+            tokens.replaceAll(String::toLowerCase);
         }
-        return terms;
+
+        if (stopWords) {
+            // Using stop words list available in resources folder
+            try {
+                List<String> stopWords = new ArrayList<>();
+            /* Reading stop words file*/
+                BufferedReader br = new BufferedReader(new FileReader("src/main/resources/stopWords.txt"));
+                String line;
+                while((line = br.readLine()) != null){
+                    stopWords.add(line);
+                }
+            /* Removing stop words */
+                tokens.removeAll(stopWords);
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        if (stemming) {
+            // using Porter Stemming Algorithm and OpenNLP Library
+            List<String> terms = new ArrayList<>();
+            PorterStemmer porterStemmer = new PorterStemmer();
+            for (String str : tokens) {
+                terms.add(porterStemmer.stem(str));
+            }
+            return terms;
+        }
+        return tokens;
+
     }
 }
