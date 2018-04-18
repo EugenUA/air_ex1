@@ -156,6 +156,28 @@ public class Search {
                 break;
             case "bm25va":
                 bm25va = new BM25VA();
+                totalLength = 0;
+                for (int length : lengthList) {
+                    totalLength += length;
+                }
+                averageDocumentLength = totalLength/corpusSize;
+                TreeMap<String, Double> bm25VATreeSet = new TreeMap<>();
+                i = 0;
+                for (String document : docIdToTfMap.keySet()) {
+                    bm25VATreeSet.put(document, bm25va.BM25VA_score(docIdToTfMap.get(document), corpusSize, lengthList.get(i), docIdToTfMap.get(document) +1, docIdToTfMap.size(), lengthList, averageDocumentLength));
+                }
+
+                SortedSet<Map.Entry<String, Double>> bm25VASorted = rankSearchResults(bm25VATreeSet);
+                i = 1;
+                for (Map.Entry<String, Double> entry : bm25VASorted) {
+                    System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
+                    i++;
+                    if (i == 1000) {
+                        break;
+                    }
+                }
+
+                break;
             default:
                 throw new IllegalArgumentException("Incorrect function! Please try again");
         }
