@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class Main {
     public static void main(String[] args) throws Exception {
 
-        BufferedReader in = new BufferedReader(new FileReader("/Users/admin/Development/TREC8all/untitled.txt"));     //create a list of the files in the collection
+        BufferedReader in = new BufferedReader(new FileReader("src/main/resources/list.txt"));     //create a list of the files in the collection
         String str;
 
         List<String> filenames = new ArrayList<>();
