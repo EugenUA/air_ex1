@@ -10,14 +10,10 @@ import java.util.*;
 
 public class Search {
     public static void main(String[] args) throws Exception {
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         List<Topic> topicList = new ArrayList<>();
-        //System.out.println("Enter the name of the topic file");
-        //String filename = br.readLine();
-        String filename = "/Users/admin/Development/TREC8all/topicsTREC8Adhoc.txt";
 
         try {
+            String filename = args[0];
             Iterator<Topic> topicIterator = new Iterator<Topic>() {
                 BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
                 boolean eof = false;
@@ -115,55 +111,53 @@ public class Search {
             }
         // }
 
-        for (String arg: args) {
-            switch (arg) {
-                case "tfidf":
-                    tfIdf = new TfIdf();
-                    TreeMap<String, Double> tfIdfTreeSet = new TreeMap<>();
-                    for (String document : docIdToTfMap.keySet()) {
-                        tfIdfTreeSet.put(document, tfIdf.score(docIdToTfMap.get(document), corpusSize, docIdToTfMap.size()));
-                    }
+        switch (args[1]) {
+            case "tfidf":
+                tfIdf = new TfIdf();
+                TreeMap<String, Double> tfIdfTreeSet = new TreeMap<>();
+                for (String document : docIdToTfMap.keySet()) {
+                    tfIdfTreeSet.put(document, tfIdf.score(docIdToTfMap.get(document), corpusSize, docIdToTfMap.size()));
+                }
 
-                    SortedSet<Map.Entry<String, Double>> tfIdfSorted = rankSearchResults(tfIdfTreeSet);
-                    int i = 1;
-                    for (Map.Entry<String, Double> entry : tfIdfSorted) {
-                        System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
-                        i++;
-                        if (i == 1000) {
-                            break;
-                        }
+                SortedSet<Map.Entry<String, Double>> tfIdfSorted = rankSearchResults(tfIdfTreeSet);
+                int i = 1;
+                for (Map.Entry<String, Double> entry : tfIdfSorted) {
+                    System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
+                    i++;
+                    if (i == 1000) {
+                        break;
                     }
+                }
 
-                    break;
-                case "bm25":
-                    bm25 = new BM25();
-                    int totalLength = 0;
-                    for (int length : lengthList) {
-                        totalLength += length;
-                    }
-                    double averageDocumentLength = totalLength/corpusSize;
-                    TreeMap<String, Double> bm25TreeSet = new TreeMap<>();
-                    i = 0;
-                    for (String document : docIdToTfMap.keySet()) {
-                        bm25TreeSet.put(document, bm25.score(docIdToTfMap.get(document), corpusSize, lengthList.get(i), averageDocumentLength, docIdToTfMap.get(document) +1, docIdToTfMap.size()));
-                    }
+                break;
+            case "bm25":
+                bm25 = new BM25();
+                int totalLength = 0;
+                for (int length : lengthList) {
+                    totalLength += length;
+                }
+                double averageDocumentLength = totalLength/corpusSize;
+                TreeMap<String, Double> bm25TreeSet = new TreeMap<>();
+                i = 0;
+                for (String document : docIdToTfMap.keySet()) {
+                    bm25TreeSet.put(document, bm25.score(docIdToTfMap.get(document), corpusSize, lengthList.get(i), averageDocumentLength, docIdToTfMap.get(document) +1, docIdToTfMap.size()));
+                }
 
-                    SortedSet<Map.Entry<String, Double>> bm25Sorted = rankSearchResults(bm25TreeSet);
-                    i = 1;
-                    for (Map.Entry<String, Double> entry : bm25Sorted) {
-                        System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
-                        i++;
-                        if (i == 1000) {
-                            break;
-                        }
+                SortedSet<Map.Entry<String, Double>> bm25Sorted = rankSearchResults(bm25TreeSet);
+                i = 1;
+                for (Map.Entry<String, Double> entry : bm25Sorted) {
+                    System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
+                    i++;
+                    if (i == 1000) {
+                        break;
                     }
+                }
 
-                    break;
-                case "bm25va":
-                    bm25va = new BM25VA();
-                default:
-                    throw new IllegalArgumentException("Incorrect function! Please try again");
-            }
+                break;
+            case "bm25va":
+                bm25va = new BM25VA();
+            default:
+                throw new IllegalArgumentException("Incorrect function! Please try again");
         }
     }
 
