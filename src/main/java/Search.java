@@ -90,7 +90,7 @@ public class Search {
         BufferedReader docList = new BufferedReader(docReader);
         int corpusSize = getCorpusSize("documentList.dat");
         Map<String, Integer> docIdToTfMap = new HashMap<>();
-
+        List<Integer> lengthList = new ArrayList<>();
         // for (Topic topic : topicList) {
         Topic topic = topicList.get(0);
             String[] queryTerms = topic.getTerms().split("\\s*(=>|,|\\s)\\s*");
@@ -104,7 +104,9 @@ public class Search {
                                 if ((s1.substring(s1.indexOf(":") +2, s1.lastIndexOf(":")).equals(documentIds[i].substring(1, documentIds[i].lastIndexOf(' ') -1))))  {
                                     String documentId = s1.substring(0, s1.indexOf(":"));
                                     int termFrequency = Integer.valueOf(documentIds[i].substring(documentIds[i].lastIndexOf(' ') + 1));
+                                    int documentLength = Integer.valueOf((s1.substring(s1.lastIndexOf(":") +2, s1.length())));
                                     docIdToTfMap.put(documentId, termFrequency);
+                                    lengthList.add(documentLength);
                                 }
                             }
                         }
@@ -122,9 +124,9 @@ public class Search {
                         tfIdfTreeSet.put(document, tfIdf.score(docIdToTfMap.get(document), corpusSize, docIdToTfMap.size()));
                     }
 
-                    SortedSet<Map.Entry<String, Double>> entrySortedSet = rankSearchResults(tfIdfTreeSet);
+                    SortedSet<Map.Entry<String, Double>> tfIdfSorted = rankSearchResults(tfIdfTreeSet);
                     int i = 1;
-                    for (Map.Entry<String, Double> entry : entrySortedSet) {
+                    for (Map.Entry<String, Double> entry : tfIdfSorted) {
                         System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
                         i++;
                         if (i == 1000) {
@@ -135,6 +137,28 @@ public class Search {
                     break;
                 case "bm25":
                     bm25 = new BM25();
+                    int totalLength = 0;
+                    for (int length : lengthList) {
+                        totalLength += length;
+                    }
+                    double averageDocumentLength = totalLength/corpusSize;
+                    TreeMap<String, Double> bm25TreeSet = new TreeMap<>();
+                    i = 0;
+                    for (String document : docIdToTfMap.keySet()) {
+                        bm25TreeSet.put(document, bm25.score(docIdToTfMap.get(document), corpusSize, lengthList.get(i), averageDocumentLength, docIdToTfMap.get(document) +1, docIdToTfMap.size()));
+                    }
+
+                    SortedSet<Map.Entry<String, Double>> bm25Sorted = rankSearchResults(bm25TreeSet);
+                    i = 1;
+                    for (Map.Entry<String, Double> entry : bm25Sorted) {
+                        System.out.println(topic.getId() + " Q0 " + entry.getKey() + " " + i + " " + entry.getValue() + " experiment 626");
+                        i++;
+                        if (i == 1000) {
+                            break;
+                        }
+                    }
+
+                    break;
                 case "bm25va":
                     bm25va = new BM25VA();
                 default:
